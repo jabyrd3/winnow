@@ -1,0 +1,5 @@
+tmp
+node_modules
+config.js
+winnow.data
+*.sublime*
