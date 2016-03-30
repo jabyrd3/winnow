@@ -85,7 +85,7 @@ vorpal
                         rimraf.sync('rm tmp/.git');
 
                         // used in email, git, and db save
-                        var testurl = `${config.gitProfileUrl}/${args.tag}-${hash}.git`;
+                        var testurl = res.body.url;
 
                         // used just in email message body
                         var username = config.username;
@@ -147,6 +147,38 @@ vorpal
             })
             return callback();
         })
+    });
+vorpal
+    .command('clean:repos', 'clear all winnow repos from github')
+    .action(function(args, callback) {
+        db.each('SELECT * FROM applicants', function(err, row) {
+            if (err) {
+                console.log(err);
+                return callback();
+            }
+            var tempUrl = row.url.split('/');
+            var tempUrl = tempUrl[tempUrl.length - 1];
+            request({
+                    method: 'DELETE',
+                    url: row.url,
+                    headers: {
+                        'User-Agent': 'winnow-code-test',
+                        'Authorization': `token ${config.privToken}`
+                    }
+                },
+                function(err, res) {
+                    if (err) {
+                        console.log('ooops', err);
+                        rimraf.sync('tmp');
+                        return callback();
+                    }
+                    console.log('res', res.body);
+                    // rows.forEach(function(row) {
+                    //     console.log(`${row.tag}: ${row.email} @ ${row.url}`);
+                    // })
+                    return callback();
+                });
+        });
     });
 vorpal
     .command('clean:tmp', 'removes tmp dir')
