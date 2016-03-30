@@ -12,6 +12,7 @@ var fs = require('fs');
 var canvas = require('canvas');
 var jsdom = require('jsdom');
 var _ = require('lodash');
+var crypto = require('crypto');
 db.serialize(function() {
     // quick and dirty db setup
     db.run("CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT); ", [], function(err, rows) {});
@@ -27,7 +28,7 @@ vorpal
                     fs.writeFileSync(path, obfuscate.code, 'utf8');
                 });
                 exec('cd ./tmp; git init');
-                var hash = Math.random();
+                var hash = crypto.createHash('md5').update(`${args.tag} ${args.email}`).digest('hex');
                 //post new repo to github
                 request.post({
                         url: `https://${config.privToken}:x-oauth-basic@api.github.com/user/repos`,
@@ -35,7 +36,7 @@ vorpal
                             'User-Agent': 'winnow-code-test'
                         },
                         json: {
-                            "name": hash,
+                            "name": `${args.tag}-${hash}`,
                             "description": "This is a codetest from winnow",
                             "private": false,
                             "has_issues": true,
@@ -52,14 +53,14 @@ vorpal
                         }
                         rimraf.sync('rm tmp/.git');
                         exec('cd tmp; git init; git add .; git commit -m \'init\'');
-                        exec(`cd tmp; git remote add origin ${config.gitProfileUrl}/${hash}.git`);
+                        exec(`cd tmp; git remote add origin ${config.gitProfileUrl}/${args.tag}-${hash}.git`);
                         exec(`cd tmp; git push -u origin master`);
                         rimraf.sync('tmp');
 
                         db.run("INSERT INTO applicants (email, tag, url) VALUES ($email, $tag, $url)", {
                             $email: args.email,
                             $tag: args.tag,
-                            $url: `${config.gitProfileUrl}/${hash}`
+                            $url: `${config.gitProfileUrl}/${args.tag}-${hash}`
                         }, function(err) {
                             if (err) {
                                 console.log(error);
@@ -92,6 +93,18 @@ vorpal
         })
     });
 vorpal
+    .command('clean:tmp', 'removes tmp dir')
+    .action(function(args, callback) {
+        rimraf.sync('tmp');
+        return callback();
+    });
+vorpal
+    .command('clean:db', 'clean db')
+    .action(function(args, callback) {
+        rimraf.sync('winnow.data');
+        return callback();
+    });
+vorpal
     .command('check <tag>', 'checks pr against branch, runs pr and compares results.')
     .action(function(args, callback) {
         db.each(`SELECT * FROM applicants WHERE tag="${args.tag}"`, function(err, row) {
@@ -100,9 +113,7 @@ vorpal
             }
             rimraf.sync('tmp');
             Git.Clone(row.url, "./tmp").then(function() {
-                // console.log(row);
                 // here is where we run the tests
-                // cleanup
                 var html = fs.readFileSync(`${__dirname}/tmp/${config.indexPath}`, 'utf8');
 
                 // debug
