@@ -1,0 +1,6 @@
+module.exports = {
+    privToken: // github api private token (str)
+    testSource: // code test source url (str)
+    obfuscate: // array of files to obfuscate with uglifyjs (arr)
+    gitProfileUrl: // url of profile to publish test repo to (str)
+};
