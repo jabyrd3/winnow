@@ -6,5 +6,5 @@ module.exports = {
     scripts: ['foo', 'bar'], // scripts to load for test, relative to index (arr)
     indexPath: 'index.html', // path to index file for parsing html (str)
     username: 'Jordan Byrd', // name to inject into email (str)
-    message: '${username} sent you a code test through winnow! Please visit ${testurl} to proceed. Fork that repo, and when you\'re ready to submit your solution please submit a pull request. Thanks!' // message to send after repo has been created. only available tags are ${username} and ${testurl}.
+    message: 'Jordan Byrd sent you a code test through winnow! Please visit {{testurl}} to proceed. Fork that repo, and when you\'re ready to submit your solution please submit a pull request. Thanks!' // message to send after repo has been created. The {{testurl}} mustache tag needs to be somwhere in this string or nothing will work. 
 };

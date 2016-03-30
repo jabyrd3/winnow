@@ -69,3 +69,4 @@ clean:db - clears entire testee db. this is none recoverable.
 - interactive goog auth
 - unique id, unique tagname, interactive 'choose between two tagname'
 - keep user from breaking stuff too badly
+- manage repos to keep from cluttering up the users github too badly.
