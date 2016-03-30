@@ -1,5 +1,10 @@
-# Stop sweating the tech screening process
-It's too easy to project bias into the tech hiring process. Winnow is small commandline utility that allows you to blindly send sample codetests and check the validity of the applicants answer using only their email. It also keeps track of who you've sent tests to in a flat SQL file that is exportable / readable by anything that can manage sqlite.
+# Whitboards are awful.
+
+The first indication of a potential employees technical abilities shouldn't happen in front of a whiteboard in your office. It's a barbaric practice that overvalues certain types of problem-solving and denigrates other styles, often to the detriment of people who aren't traditional CS-graduate type programmers.
+
+Also, it's insanely inefficient! Having your technical staff watching someone frantically write psuedocode in a conference room is a waste of everyone's time. I prefer to screen candidates with an untimed test, specifically written based on the needs of the organization, that an apllicant can perform in an environment they're familiar with–on their own time–without artifical pressure or constraints. Nobody writes huge chunks of software on a whiteboard, so why should we expect it out of candidates?
+
+It's all too easy to project personal bias into the tech hiring process. Winnow is small commandline utility that allows you to blindly send sample codetests and check the validity of the answers using only an applicants email address. It also keeps track of who you've sent tests to in a flat SQL file that is exportable / readable by anything that can manage sqlite to help manage large numbers of tests and candidates to help you pick the programmer who is actually best suited for your job.
 
 # Installation
 
@@ -67,6 +72,10 @@ clean:db - clears entire testee db. this is none recoverable.
 - fancier config?
 - interactive setup
 - interactive goog auth
-- unique id, unique tagname, interactive 'choose between two tagname'
+- unique id, unique tagname, interactive 'choose between two tagnames' functionality
 - keep user from breaking stuff too badly
-- manage repos to keep from cluttering up the users github too badly.
+- manage repos to keep from cluttering up the users github profile too badly.
+- tag repos in github for ease of deletion
+- repo status per test, ie: # of commits since init, # of active pull requests.
+- automatically merge in top pull request before checking test validation
+- modularize code
