@@ -27,12 +27,12 @@ node winnow
 The winnow command opens an interactive shell-like environment via vorpal. From there, you can send code tests, view your sent tests, and check results from individual candidates.
 
 # Available commands
-send :email: :tag: - clones a repo from config.js, removes any git data, and pushes it up to a new repo
-using the credentials from config.js, sends an email to the <email> arg with a link to the codetest, and marks down the tag/email/github url of the testee in db.
+send &lt;email&gt; &lt;tag&gt; - clones a repo from config.js, removes any git data, and pushes it up to a new repo
+using the credentials from config.js, sends an email to the &lt;email&gt; arg with a link to the codetest, and marks down the tag/email/github url of the testee in db.
 
 list - lists all the testees in the db. tag: email @ https://github.com/yoururl/generated-test
 
-check :tag: - downloads the target repository, obfuscates any files you want hidden from the end user, runs the users code, and fires a simple equality test (for now), against 2 objects to test if the testee solved the problem.
+check &lt;tag&gt; - downloads the target repository, obfuscates any files you want hidden from the end user, runs the users code, and fires a simple equality test (for now), against 2 objects to test if the testee solved the problem.
 
 clean:tmp - util command removes the tmp directory in case something breaks.
 
