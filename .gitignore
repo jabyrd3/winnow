@@ -3,3 +3,5 @@ node_modules
 config.js
 winnow.data
 *.sublime*
+client_id.json
+.credentials

@@ -13,10 +13,41 @@ var canvas = require('canvas');
 var jsdom = require('jsdom');
 var _ = require('lodash');
 var crypto = require('crypto');
+var google = require('googleapis');
+var googleAuth = require('google-auth-library');
+var gmail = google.gmail('v1');
+var googTokens;
+var oauth2Client;
+fs.readFile('client_id.json', function(err, token) {
+    if (err) {
+        console.log('you need to run node gmail_auth first to generate tokens');
+        return;
+    } else {
+        var credentials = JSON.parse(token);
+        var clientSecret = credentials.installed.client_secret;
+        var clientId = credentials.installed.client_id;
+        var redirectUrl = credentials.installed.redirect_uris[0];
+        var auth = new googleAuth();
+        oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+        oauth2Client.credentials = JSON.parse(token);
+        // Check if we have previously stored a token.
+        fs.readFile('.credentials/winnow_gmail_auth.json', function(err, token) {
+            if (err) {
+                console.log('you need to run node gmail_auth first to log into gmail');
+                return;
+            } else {
+                oauth2Client.credentials = JSON.parse(token);
+                // console.log('authed');
+            }
+        });
+    }
+});
+
 db.serialize(function() {
     // quick and dirty db setup
     db.run("CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT); ", [], function(err, rows) {});
 });
+
 vorpal
     .command('send <email> <tag>', 'create hashed branch of config, sends code test to email, tags email with name and saves all data.')
     .action(function(args, callback) {
@@ -52,22 +83,47 @@ vorpal
                             return callback();
                         }
                         rimraf.sync('rm tmp/.git');
+
+                        // used in email, git, and db save
+                        var testurl = `${config.gitProfileUrl}/${args.tag}-${hash}.git`;
+
+                        // used just in email message body
+                        var username = config.username;
                         exec('cd tmp; git init; git add .; git commit -m \'init\'');
-                        exec(`cd tmp; git remote add origin ${config.gitProfileUrl}/${args.tag}-${hash}.git`);
+                        exec(`cd tmp; git remote add origin ${testurl}`);
                         exec(`cd tmp; git push -u origin master`);
                         rimraf.sync('tmp');
 
-                        db.run("INSERT INTO applicants (email, tag, url) VALUES ($email, $tag, $url)", {
-                            $email: args.email,
-                            $tag: args.tag,
-                            $url: `${config.gitProfileUrl}/${args.tag}-${hash}`
-                        }, function(err) {
+                        // ugly hack for now
+                        config.message = config.message.replace('{{testurl}}', testurl);
+                        var body = makeBody(args.email, config.username, config.subject || 'winnow codetest', config.message);
+
+                        // lets send some mail
+                        gmail.users.messages.send({
+                            auth: oauth2Client,
+                            userId: 'me',
+                            resource: { raw: body }
+                        }, function(err, res) {
                             if (err) {
-                                console.log(error);
+                                console.log('err: ', err);
+                                rimraf.sync('tmp');
                                 return callback();
                             }
-                            console.log('success');
-                            return callback();
+                            console.log('mail sent')
+
+                            // insert data about user into the db.
+                            db.run("INSERT INTO applicants (email, tag, url) VALUES ($email, $tag, $url)", {
+                                $email: args.email,
+                                $tag: args.tag,
+                                $url: testurl
+                            }, function(err) {
+                                if (err) {
+                                    console.log(error);
+                                    return callback();
+                                }
+                                console.log('success');
+                                return callback();
+                            });
                         });
                     });
             })
@@ -156,3 +212,17 @@ vorpal
 vorpal
     .delimiter('winnow$')
     .show();
+// util
+function makeBody(to, from, subject, message) {
+    var str = ["Content-Type: text/plain; charset=\"UTF-8\"\n",
+        "MIME-Version: 1.0\n",
+        "Content-Transfer-Encoding: 7bit\n",
+        "to: ", to, "\n",
+        "from: ", from, "\n",
+        "subject: ", subject, "\n\n",
+        message
+    ].join('');
+
+    var encodedMail = new Buffer(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_');
+    return encodedMail;
+}

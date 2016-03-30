@@ -1,0 +1,12 @@
+// oauth 2.0 client_id.json from google api dashboard
+{
+    "installed": {
+        "client_id": "asdfasdf-asdfasdfasdfasdf.apps.googleusercontent.com", // str
+        "project_id": "word-words-int", // str
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth", // goog oauth, you can leave this
+        "token_uri": "https://accounts.google.com/o/oauth2/token", // goog token uri, you can leave this
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs", // double check this 
+        "client_secret": "sdfasdfasfasdf-asdfaqwerasdfqweafsdf", // get from client_id.json
+        "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"] // shouldn't matter so much?
+    }
+}

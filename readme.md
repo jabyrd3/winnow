@@ -2,12 +2,23 @@
 It's too easy to project bias into the tech hiring process. Winnow is small commandline utility that allows you to blindly send sample codetests and check the validity of the applicants answer using only their email. It also keeps track of who you've sent tests to in a flat SQL file that is exportable / readable by anything that can manage sqlite.
 
 # Installation
-You'll need to edit config.js.sample. All fields are mandatory. You'll have to register a personal API access token with github in order to use it. Make sure to give that token permissions to modify/create repos in the github UI.
 
 ```
 git clone https://github.com/jabyrd3/winnow
 cd winnow
 npm install
+```
+
+THEN:
+
+- You'll need to edit config.js.sample. 
+- You'll have to register a personal API access token with github in order to use it. Make sure to give that token permissions to modify/create repos in the github UI.
+- In the google api credentials dashboard you'll need to follow the wizard to get a client\_id.json file for winnow to send auth to send mail on your behalf. copy that client\_id.json into the winnow directory
+
+THEN: 
+
+```
+node gmail_auth.js # follow the instructions after this command
 node winnow
 ```
 
@@ -55,3 +66,6 @@ clean:db - clears entire testee db. this is none recoverable.
 - multiple code tests
 - fancier config?
 - interactive setup
+- interactive goog auth
+- unique id, unique tagname, interactive 'choose between two tagname'
+- keep user from breaking stuff too badly
