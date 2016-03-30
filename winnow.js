@@ -9,12 +9,15 @@ var exec = require('sync-exec');
 var request = require('request');
 var config = require('./config.js');
 var fs = require('fs');
+var canvas = require('canvas');
+var jsdom = require('jsdom');
+var _ = require('lodash');
 db.serialize(function() {
     // quick and dirty db setup
     db.run("CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT); ", [], function(err, rows) {});
 });
 vorpal
-    .command('send <email> [tag]', 'create hashed branch of config, sends code test to email, tags email with name and saves all data.')
+    .command('send <email> <tag>', 'create hashed branch of config, sends code test to email, tags email with name and saves all data.')
     .action(function(args, callback) {
         Git.Clone(config.testSource, "./tmp")
             .then(function(repo) {
@@ -89,18 +92,50 @@ vorpal
         })
     });
 vorpal
-    .command('check', 'checks pr against branch, runs pr and compares results.')
+    .command('check <tag>', 'checks pr against branch, runs pr and compares results.')
     .action(function(args, callback) {
-        db.each('SELECT * FROM applicants WHERE tag="foo"', function(err, row) {
+        db.each(`SELECT * FROM applicants WHERE tag="${args.tag}"`, function(err, row) {
             if (err) {
                 console.log(err);
             }
+            rimraf.sync('tmp');
             Git.Clone(row.url, "./tmp").then(function() {
-                console.log(row);
+                // console.log(row);
                 // here is where we run the tests
                 // cleanup
-                // rimraf.sync('tmp');
-                return callback();
+                var html = fs.readFileSync(`${__dirname}/tmp/${config.indexPath}`, 'utf8');
+
+                // debug
+                // var virtualConsole = jsdom.createVirtualConsole();
+                // virtualConsole.on("log", function(message) {
+                //     console.log("console.log called ->", message);
+                // });
+
+                jsdom.env({
+                    file: `${__dirname}/tmp/${config.indexPath}`,
+                    scripts: config.scripts,
+                    // debug
+                    // virtualConsole: virtualConsole,
+                    created: function(error, window) {
+                        if (error) {
+                            console.log(error);
+                        }
+                        window.doneTrigger = function(success, state) {
+                            if (_.isEqual(success, state)) {
+                                console.log('checks out');
+                                rimraf.sync('tmp');
+                                return callback();
+                            } else {
+                                console.log('they screwed somthing up');
+                                rimraf.sync('tmp');
+                                return callback();
+                            }
+                        }
+                    },
+                    onload: function(window) {
+                        window.onload();
+                    }
+                });
             }).catch(function(err) {
                 console.log('i regret to inform you that there has been a catastrophic oops', err);
                 rimraf.sync('tmp');

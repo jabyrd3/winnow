@@ -1,6 +1,8 @@
 module.exports = {
-    privToken: // github api private token (str)
-    testSource: // code test source url (str)
-    obfuscate: // array of files to obfuscate with uglifyjs (arr)
-    gitProfileUrl: // url of profile to publish test repo to (str)
+    privToken: 'asdfasdfasdfasdf', // github api private token (str)
+    testSource: 'https://github/cloneme', // code test source url (str)
+    obfuscate: ['engine.js']// array of files to obfuscate with uglifyjs (arr)
+    gitProfileUrl: 'https://github/profile'// url of profile to publish test repo to (str),
+    scripts: ['foo', 'bar'], // scripts to load for test, relative to index (arr)
+    indexPath: 'index.html' // path to index file for parsing html (str)
 };
