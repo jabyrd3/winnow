@@ -2,8 +2,8 @@ var vorpal = require('vorpal')();
 var sqlite3 = require('sqlite3')
     .verbose();
 var db = new sqlite3.Database('./winnow.data');
-var Git = require("nodegit");
-var UglifyJS = require("uglify-js");
+var Git = require('nodegit');
+var UglifyJS = require('uglify-js');
 var rimraf = require('rimraf');
 var exec = require('sync-exec');
 var request = require('request');
@@ -45,13 +45,14 @@ fs.readFile('client_id.json', function(err, token) {
 
 db.serialize(function() {
     // quick and dirty db setup
-    db.run("CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT, apiurl TEXT); ", [], function(err, rows) {});
+    db.run('CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT, apiurl TEXT); ', [], function(err, rows) {});
 });
 
 vorpal
     .command('send <email> <tag>', 'create hashed branch of config, sends code test to email, tags email with name and saves all data.')
     .action(function(args, callback) {
-        Git.Clone(config.testSource, "./tmp")
+        rimraf.sync('./tmp');
+        Git.Clone(config.testSource, './tmp')
             .then(function(repo) {
                 rimraf.sync('tmp/.git');
                 config.obfuscate.forEach(function(path) {
@@ -67,12 +68,12 @@ vorpal
                             'User-Agent': 'winnow-code-test'
                         },
                         json: {
-                            "name": `${args.tag}-${hash}`,
-                            "description": "This is a codetest from winnow",
-                            "private": false,
-                            "has_issues": true,
-                            "has_wiki": true,
-                            "has_downloads": true
+                            'name': `${args.tag}-${hash}`,
+                            'description': 'This is a codetest from winnow',
+                            'private': false,
+                            'has_issues': true,
+                            'has_wiki': true,
+                            'has_downloads': true
 
                         }
                     },
@@ -95,8 +96,8 @@ vorpal
                         rimraf.sync('tmp');
 
                         // ugly hack for now
-                        config.message = config.message.replace('{{testurl}}', testurl);
-                        var body = makeBody(args.email, config.username, config.subject || 'winnow codetest', config.message);
+                        var message = new String(config.message).replace('{{testurl}}', testurl);
+                        var body = makeBody(args.email, config.username, config.subject || 'winnow codetest', message);
 
                         // lets send some mail
                         gmail.users.messages.send({
@@ -112,7 +113,7 @@ vorpal
                             console.log('mail sent')
 
                             // insert data about user into the db.
-                            db.run("INSERT INTO applicants (email, tag, url, apiurl) VALUES ($email, $tag, $url, $apiurl)", {
+                            db.run('INSERT INTO applicants (email, tag, url, apiurl) VALUES ($email, $tag, $url, $apiurl)', {
                                 $email: args.email,
                                 $tag: args.tag,
                                 $url: testurl,
@@ -194,19 +195,19 @@ vorpal
 vorpal
     .command('check <tag>', 'checks pr against branch, runs pr and compares results.')
     .action(function(args, callback) {
-        db.each(`SELECT * FROM applicants WHERE tag="${args.tag}"`, function(err, row) {
+        db.each(`SELECT * FROM applicants WHERE tag='${args.tag}'`, function(err, row) {
             if (err) {
                 console.log(err);
             }
             rimraf.sync('tmp');
-            Git.Clone(row.url, "./tmp").then(function() {
+            Git.Clone(row.url, './tmp').then(function() {
                 // here is where we run the tests
                 var html = fs.readFileSync(`${__dirname}/tmp/${config.indexPath}`, 'utf8');
 
                 // debug
                 // var virtualConsole = jsdom.createVirtualConsole();
-                // virtualConsole.on("log", function(message) {
-                //     console.log("console.log called ->", message);
+                // virtualConsole.on('log', function(message) {
+                //     console.log('console.log called ->', message);
                 // });
 
                 jsdom.env({
@@ -245,15 +246,15 @@ vorpal
     .show();
 // util
 function makeBody(to, from, subject, message) {
-    var str = ["Content-Type: text/plain; charset=\"UTF-8\"\n",
-        "MIME-Version: 1.0\n",
-        "Content-Transfer-Encoding: 7bit\n",
-        "to: ", to, "\n",
-        "from: ", from, "\n",
-        "subject: ", subject, "\n\n",
+    var str = ['Content-Type: text/plain; charset=\'UTF-8\'\n',
+        'MIME-Version: 1.0\n',
+        'Content-Transfer-Encoding: 7bit\n',
+        'to: ', to, '\n',
+        'from: ', from, '\n',
+        'subject: ', subject, '\n\n',
         message
     ].join('');
 
-    var encodedMail = new Buffer(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_');
+    var encodedMail = new Buffer(str).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
     return encodedMail;
 }
