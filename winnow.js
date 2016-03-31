@@ -45,7 +45,7 @@ fs.readFile('client_id.json', function(err, token) {
 
 db.serialize(function() {
     // quick and dirty db setup
-    db.run("CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT); ", [], function(err, rows) {});
+    db.run("CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT, apiurl TEXT); ", [], function(err, rows) {});
 });
 
 vorpal
@@ -85,8 +85,8 @@ vorpal
                         rimraf.sync('rm tmp/.git');
 
                         // used in email, git, and db save
-                        var testurl = res.body.url;
-
+                        var testurl = res.body.html_url;
+                        var apiurl = res.body.url;
                         // used just in email message body
                         var username = config.username;
                         exec('cd tmp; git init; git add .; git commit -m \'init\'');
@@ -112,13 +112,14 @@ vorpal
                             console.log('mail sent')
 
                             // insert data about user into the db.
-                            db.run("INSERT INTO applicants (email, tag, url) VALUES ($email, $tag, $url)", {
+                            db.run("INSERT INTO applicants (email, tag, url, apiurl) VALUES ($email, $tag, $url, $apiurl)", {
                                 $email: args.email,
                                 $tag: args.tag,
-                                $url: testurl
+                                $url: testurl,
+                                $apiurl: apiurl
                             }, function(err) {
                                 if (err) {
-                                    console.log(error);
+                                    console.log(err);
                                     return callback();
                                 }
                                 console.log('success');
@@ -156,11 +157,9 @@ vorpal
                 console.log(err);
                 return callback();
             }
-            var tempUrl = row.url.split('/');
-            var tempUrl = tempUrl[tempUrl.length - 1];
             request({
                     method: 'DELETE',
-                    url: row.url,
+                    url: row.apiurl,
                     headers: {
                         'User-Agent': 'winnow-code-test',
                         'Authorization': `token ${config.privToken}`
