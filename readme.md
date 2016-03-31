@@ -1,4 +1,4 @@
-# Whitboards are awful.
+# Whiteboards are awful.
 
 The first indication of a potential employees technical abilities shouldn't happen in front of a whiteboard in your office. It's a barbaric practice that overvalues certain types of problem-solving and denigrates other styles, often to the detriment of people who aren't traditional CS-graduate type programmers.
 
@@ -17,8 +17,8 @@ npm install
 THEN:
 
 - You'll need to edit config.js.sample. 
-- You'll have to register a personal API access token with github in order to use it. Make sure to give that token permissions to modify/create repos in the github UI.
-- In the google api credentials dashboard you'll need to follow the wizard to get a client\_id.json file for winnow to send auth to send mail on your behalf. copy that client\_id.json into the winnow directory
+- You'll have to register a personal API access token with github in order to use it. Make sure to give that token permissions to modify/create/delete repos in the github UI.
+- In the google api credentials dashboard you'll need to follow the wizard to get a client\_id.json file for winnow to authenticate to send mail on your behalf. copy that client\_id.json into the winnow directory.
 
 THEN: 
 
@@ -50,9 +50,11 @@ list - lists all the testees in the db. tag: email @ https://github.com/yoururl/
 
 check &lt;tag&gt; - downloads the target repository, obfuscates any files you want hidden from the end user, runs the users code, and fires a simple equality test (for now), against 2 objects to test if the testee solved the problem.
 
-clean:tmp - util command removes the tmp directory in case something breaks.
+clean:tmp - removes the tmp directory in case something breaks. If you ever need to use this please file an issue
 
-clean:db - clears entire testee db. this is none recoverable.
+clean:repos - deletes all winnow repos from your github account.
+
+clean:db - clears entire testee db. this is non-recoverable.
 
 # Todo
 - add more complicated testing capabilites.
