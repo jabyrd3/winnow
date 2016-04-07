@@ -138,10 +138,9 @@ vorpal.command('details <tag>', 'get details on applicant').action(function(args
     db.get('SELECT * FROM applicants WHERE tag = $tag', {
         $tag: args.tag
     }, function(err, row) {
-        console.log(row);
-        // row = row[0];
         if (err) { console.log('oops', err); }
         console.log(`${row.tag} @ ${row.email} \n url: ${row.url} \n passed: ${formatUnix(row.lastpass)} \n failed: ${formatUnix(row.lastfail)}`);
+        return callback();
     });
 });
 vorpal
@@ -181,10 +180,7 @@ vorpal
                         rimraf.sync('tmp');
                         return callback();
                     }
-                    console.log('res', res.body);
-                    // rows.forEach(function(row) {
-                    //     console.log(`${row.tag}: ${row.email} @ ${row.url}`);
-                    // })
+                    console.log('response: ', res.status, res.body);
                     return callback();
                 });
         });
