@@ -134,7 +134,16 @@ vorpal
                 return callback();
             });
     });
-
+vorpal.command('details <tag>', 'get details on applicant').action(function(args, callback) {
+    db.get('SELECT * FROM applicants WHERE tag = $tag', {
+        $tag: args.tag
+    }, function(err, row) {
+        console.log(row);
+        // row = row[0];
+        if (err) { console.log('oops', err); }
+        console.log(`${row.tag} @ ${row.email} \n url: ${row.url} \n passed: ${formatUnix(row.lastpass)} \n failed: ${formatUnix(row.lastfail)}`);
+    });
+});
 vorpal
     .command('list', 'lists emails and tags')
     .action(function(args, callback) {
@@ -145,7 +154,7 @@ vorpal
             }
             rows.forEach(function(row) {
                 // console.log(moment.unix(row.lastfail).format('MMMM Do YYYY, h:mm:ss a'));
-                console.log(`${row.tag}: ${row.email} @ ${row.url} \n last passed: ${row.lastpass}, last failed: ${moment.unix(row.lastfail).format('MMMM Do YYYY, h:mm:ss a')}`);
+                console.log(`${row.tag} last passed: ${formatUnix(row.lastpass)} last failed: ${formatUnix(row.lastfail)}`);
             });
             return callback();
         });
@@ -253,7 +262,7 @@ vorpal
     .delimiter('winnow$')
     .show();
 // util
-function makeBody(to, from, subject, message) {
+var makeBody = function(to, from, subject, message) {
     var str = ['Content-Type: text/plain; charset=\'UTF-8\'\n',
         'MIME-Version: 1.0\n',
         'Content-Transfer-Encoding: 7bit\n',
@@ -265,4 +274,10 @@ function makeBody(to, from, subject, message) {
 
     var encodedMail = new Buffer(str).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
     return encodedMail;
-}
+};
+var formatUnix = function(ts) {
+    if (!ts) {
+        return 'never';
+    }
+    return moment.unix(ts).format('MMMM Do YYYY, h:mm a');
+};
