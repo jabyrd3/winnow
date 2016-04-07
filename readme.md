@@ -57,27 +57,27 @@ clean:repos - deletes all winnow repos from your github account.
 clean:db - clears entire testee db. this is non-recoverable.
 
 # Todo
-- add more complicated testing capabilites.
-- delete single items by tagname
-- search by email
-- search by tagname
-- delete via regex/glob
-- ~ save test results ~
-- check all tests?
-- colors
-- tab complete
-- package for npm
-- table view
-- table interactivity?
-- named code tests
-- multiple code tests
-- fancier config?
-- interactive setup
-- interactive goog auth
-- unique id, unique tagname, interactive 'choose between two tagnames' functionality
-- keep user from breaking stuff too badly
-- ~ manage repos to keep from cluttering up the users github profile too badly. ~
-- tag repos in github for ease of deletion
-- repo status per test, ie: # of commits since init, # of active pull requests.
-- check out pr instead of actual HEAD on code check
-- modularize code (commands dir)
+- [ ] add more complicated testing capabilites.
+- [ ] delete single items by tagname
+- [ ] search by email
+- [ ] search by tagname
+- [ ] delete via regex/glob
+- [x] save test results
+- [ ] check all tests?
+- [ ] colors
+- [ ] tab complete
+- [ ] package for npm
+- [ ] table view
+- [ ] table interactivity?
+- [ ] named code tests
+- [ ] multiple code tests
+- [ ] fancier config?
+- [ ] interactive setup
+- [ ] interactive goog auth
+- [ ] unique id, unique tagname, interactive 'choose between two tagnames' functionality
+- [ ] keep user from breaking stuff too badly
+- [x] manage repos to keep from cluttering up the users github profile too badly
+- [ ] tag repos in github for ease of deletion
+- [ ] repo status per test, ie: # of commits since init, # of active pull requests.
+- [ ] check out pr instead of actual HEAD on code check
+- [ ] modularize code (commands dir)
