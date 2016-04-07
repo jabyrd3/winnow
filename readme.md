@@ -62,7 +62,7 @@ clean:db - clears entire testee db. this is non-recoverable.
 - search by email
 - search by tagname
 - delete via regex/glob
-- ~save test results~
+- ~ save test results ~
 - check all tests?
 - colors
 - tab complete
@@ -76,7 +76,7 @@ clean:db - clears entire testee db. this is non-recoverable.
 - interactive goog auth
 - unique id, unique tagname, interactive 'choose between two tagnames' functionality
 - keep user from breaking stuff too badly
-- ~manage repos to keep from cluttering up the users github profile too badly.~
+- ~ manage repos to keep from cluttering up the users github profile too badly. ~
 - tag repos in github for ease of deletion
 - repo status per test, ie: # of commits since init, # of active pull requests.
 - check out pr instead of actual HEAD on code check
