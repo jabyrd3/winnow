@@ -15,9 +15,9 @@ var _ = require('lodash');
 var crypto = require('crypto');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
+var moment = require('moment');
 var gmail = google.gmail('v1');
-var googTokens;
-var oauth2Client;
+var googTokens, oauth2Client;
 fs.readFile('client_id.json', function(err, token) {
     if (err) {
         console.log('you need to run node gmail_auth first to generate tokens');
@@ -45,7 +45,7 @@ fs.readFile('client_id.json', function(err, token) {
 
 db.serialize(function() {
     // quick and dirty db setup
-    db.run('CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT, apiurl TEXT); ', [], function(err, rows) {});
+    db.run('CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT, apiurl TEXT, lastfail INTEGER, lastpass INTEGER); ', [], function(err, rows) {});
 });
 
 vorpal
@@ -74,7 +74,6 @@ vorpal
                             'has_issues': true,
                             'has_wiki': true,
                             'has_downloads': true
-
                         }
                     },
                     function(err, res) {
@@ -110,7 +109,7 @@ vorpal
                                 rimraf.sync('tmp');
                                 return callback();
                             }
-                            console.log('mail sent')
+                            console.log('mail sent');
 
                             // insert data about user into the db.
                             db.run('INSERT INTO applicants (email, tag, url, apiurl) VALUES ($email, $tag, $url, $apiurl)', {
@@ -145,10 +144,11 @@ vorpal
                 return callback();
             }
             rows.forEach(function(row) {
-                console.log(`${row.tag}: ${row.email} @ ${row.url}`);
-            })
+                // console.log(moment.unix(row.lastfail).format('MMMM Do YYYY, h:mm:ss a'));
+                console.log(`${row.tag}: ${row.email} @ ${row.url} \n last passed: ${row.lastpass}, last failed: ${moment.unix(row.lastfail).format('MMMM Do YYYY, h:mm:ss a')}`);
+            });
             return callback();
-        })
+        });
     });
 vorpal
     .command('clean:repos', 'clear all winnow repos from github')
@@ -222,14 +222,22 @@ vorpal
                         window.doneTrigger = function(success, state) {
                             if (_.isEqual(success, state)) {
                                 console.log('checks out');
+                                db.run(`UPDATE applicants SET lastpass = strftime('%s','now') WHERE tag = $tag`, {
+                                    $tag: args.tag
+                                });
                                 rimraf.sync('tmp');
                                 return callback();
                             } else {
                                 console.log('they screwed somthing up');
-                                rimraf.sync('tmp');
-                                return callback();
+                                db.run(`UPDATE applicants SET lastfail = strftime('%s','now') WHERE tag = $tag`, {
+                                    $tag: args.tag
+                                }, function(err) {
+                                    console.log(err);
+                                    rimraf.sync('tmp');
+                                    return callback();
+                                });
                             }
-                        }
+                        };
                     },
                     onload: function(window) {
                         window.onload();
@@ -239,7 +247,7 @@ vorpal
                 console.log('i regret to inform you that there has been a catastrophic oops', err);
                 rimraf.sync('tmp');
             });
-        })
+        });
     });
 vorpal
     .delimiter('winnow$')
