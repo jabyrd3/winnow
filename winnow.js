@@ -24,7 +24,7 @@ var colors = require('colors');
 
 fs.readFile('client_id.json', function(err, token) {
     if (err) {
-        console.log('you need to run node gmail_auth first to generate tokens');
+        console.log('you need to run node gmail_auth.js first to generate tokens');
         return;
     } else {
         var credentials = JSON.parse(token);
@@ -41,7 +41,6 @@ fs.readFile('client_id.json', function(err, token) {
                 return;
             } else {
                 oauth2Client.credentials = JSON.parse(token);
-                // console.log('authed');
             }
         });
     }
@@ -157,7 +156,6 @@ vorpal
             }
             var collection = [];
             rows.forEach(function(row) {
-                // console.log(moment.unix(row.lastfail).format('MMMM Do YYYY, h:mm:ss a'));
                 if (row) {
                     collection.push({ tag: row.tag, 'passed': formatUnix(row.lastpass), 'failed': formatUnix(row.lastfail) });
                 }
@@ -192,7 +190,7 @@ vorpal
                         rimraf.sync('tmp');
                         return callback();
                     }
-                    console.log('response: ', res.status, res.body);
+                    // console.log('response: ', res.status, res.body);
                     return callback();
                 });
         });
@@ -217,53 +215,90 @@ vorpal
                 console.log(err);
             }
             rimraf.sync('tmp');
-            Git.Clone(row.url, './tmp').then(function() {
-                // here is where we run the tests
-                var html = fs.readFileSync(`${__dirname}/tmp/${config.indexPath}`, 'utf8');
-
-                // debug
-                // var virtualConsole = jsdom.createVirtualConsole();
-                // virtualConsole.on('log', function(message) {
-                //     console.log('console.log called ->', message);
-                // });
-
-                jsdom.env({
-                    file: `${__dirname}/tmp/${config.indexPath}`,
-                    scripts: config.scripts,
-                    // debug
-                    // virtualConsole: virtualConsole,
-                    created: function(error, window) {
-                        if (error) {
-                            console.log(error);
-                        }
-                        window.doneTrigger = function(success, state) {
-                            if (_.isEqual(success, state)) {
-                                console.log('checks out');
-                                db.run(`UPDATE applicants SET lastpass = strftime('%s','now') WHERE tag = $tag`, {
-                                    $tag: args.tag
-                                });
-                                rimraf.sync('tmp');
-                                return callback();
-                            } else {
-                                console.log('they screwed somthing up');
-                                db.run(`UPDATE applicants SET lastfail = strftime('%s','now') WHERE tag = $tag`, {
-                                    $tag: args.tag
-                                }, function(err) {
-                                    console.log(err);
-                                    rimraf.sync('tmp');
-                                    return callback();
-                                });
-                            }
-                        };
+            request.get({
+                    url: `https://${config.privToken}:x-oauth-basic@api.github.com/repos/${config.gitUserName}/${args.tag}-${crypto.createHash('md5').update(args.tag + ' ' + row.email).digest('hex')}/pulls`,
+                    headers: {
+                        'User-Agent': 'winnow-code-test'
                     },
-                    onload: function(window) {
-                        window.onload();
+                },
+                function(err, res) {
+                    if (err) {
+                        console.log(err);
+                        return callback();
+                    }
+                    // console.log('body:', res.body);
+                    if (res.length === 0) {
+                        console.log('no change since your last check!');
+                        return callback();
+                    } else {
+                        res.body = JSON.parse(res.body);
+                        request.post({
+                            url: `https://${config.privToken}:x-oauth-basic@api.github.com/repos/${config.gitUserName}/${args.tag}-${crypto.createHash('md5').update(args.tag + ' ' + row.email).digest('hex')}/merges`,
+                            headers: {
+                                'User-Agent': 'winnow-code-test'
+                            },
+                            json: {
+                                base: 'master',
+                                head: res.body[0].merge_commit_sha,
+                                commit_message: 'moment of truth'
+                            }
+                        }, function(err, res2) {
+                            if (err) {
+                                console.warn('merge failed:', err);
+                                return callback();
+                            }
+                            Git.Clone(row.url, './tmp').then(function() {
+                                // here is where we run the tests
+                                var html = fs.readFileSync(`${__dirname}/tmp/${config.indexPath}`, 'utf8');
+
+                                // debug
+                                // var virtualConsole = jsdom.createVirtualConsole();
+                                // virtualConsole.on('log', function(message) {
+                                //     console.log('console.log called ->', message);
+                                // });
+
+                                jsdom.env({
+                                    file: `${__dirname}/tmp/${config.indexPath}`,
+                                    scripts: config.scripts,
+                                    // debug
+                                    // virtualConsole: virtualConsole,
+                                    created: function(error, window) {
+                                        if (error) {
+                                            console.log(error);
+                                        }
+                                        window.doneTrigger = function(success, state) {
+                                            if (_.isEqual(success, state)) {
+                                                console.log('checks out');
+                                                db.run(`UPDATE applicants SET lastpass = strftime('%s','now') WHERE tag = $tag`, {
+                                                    $tag: args.tag
+                                                });
+                                                rimraf.sync('tmp');
+                                                return callback();
+                                            } else {
+                                                console.log('they screwed somthing up');
+                                                db.run(`UPDATE applicants SET lastfail = strftime('%s','now') WHERE tag = $tag`, {
+                                                    $tag: args.tag
+                                                }, function(err) {
+                                                    if (err) {
+                                                        console.log(err);
+                                                    }
+                                                    rimraf.sync('tmp');
+                                                    return callback();
+                                                });
+                                            }
+                                        };
+                                    },
+                                    onload: function(window) {
+                                        window.onload();
+                                    }
+                                });
+                            }).catch(function(err) {
+                                console.log('i regret to inform you that there has been a catastrophic oops', err);
+                                rimraf.sync('tmp');
+                            });
+                        });
                     }
                 });
-            }).catch(function(err) {
-                console.log('i regret to inform you that there has been a catastrophic oops', err);
-                rimraf.sync('tmp');
-            });
         });
     });
 vorpal
@@ -288,25 +323,4 @@ var formatUnix = function(ts) {
         return 'never';
     }
     return moment.unix(ts).format('MMMM Do YYYY, h:mm a');
-};
-var renderVTable = function(collection) {
-    var headers = Object.keys(collection[0]);
-    var rows = [];
-    collection.forEach((item) => {
-        rows.push({ fields: Object.values(item) });
-    });
-    // begin rows = [{fields: [123,1,1244]}]
-    // end rows = [{fields: [{length: 3}]}]
-    // var rows = _.each(rows, row=>{
-    //     _.map(row.fields, field=>{
-    //         return {text: field, length: field.length};
-    //     });
-    // });
-    var totalHeaderWidth = _.chain(headers).reduce((result, value) => {
-        return result + value.length;
-    }, 0);
-    console.log('total header column width');
-    var totalWidth = _.chain(rows);
-    console.log('_______________')
-    forEach(headers, (val, index) => {});
 };
