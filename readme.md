@@ -67,7 +67,7 @@ clean:db - clears entire testee db. this is non-recoverable.
 - [ ] colors
 - [ ] tab complete
 - [ ] package for npm
-- [ ] table view
+- [x] table view for list
 - [ ] table interactivity?
 - [ ] named code tests
 - [ ] multiple code tests
