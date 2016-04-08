@@ -2,6 +2,7 @@ var vorpal = require('vorpal')();
 var sqlite3 = require('sqlite3')
     .verbose();
 var db = new sqlite3.Database('./winnow.data');
+
 var Git = require('nodegit');
 var UglifyJS = require('uglify-js');
 var rimraf = require('rimraf');
@@ -18,6 +19,9 @@ var googleAuth = require('google-auth-library');
 var moment = require('moment');
 var gmail = google.gmail('v1');
 var googTokens, oauth2Client;
+var table = require('./rendervtable.js');
+var colors = require('colors');
+
 fs.readFile('client_id.json', function(err, token) {
     if (err) {
         console.log('you need to run node gmail_auth first to generate tokens');
@@ -151,10 +155,18 @@ vorpal
                 console.log(err);
                 return callback();
             }
+            var collection = [];
             rows.forEach(function(row) {
                 // console.log(moment.unix(row.lastfail).format('MMMM Do YYYY, h:mm:ss a'));
-                console.log(`${row.tag} last passed: ${formatUnix(row.lastpass)} last failed: ${formatUnix(row.lastfail)}`);
+                if (row) {
+                    collection.push({ tag: row.tag, 'passed': formatUnix(row.lastpass), 'failed': formatUnix(row.lastfail) });
+                }
             });
+            if (rows.length > 0) {
+                table(collection);
+            } else {
+                console.log('no tests have been sent');
+            }
             return callback();
         });
     });
@@ -276,4 +288,25 @@ var formatUnix = function(ts) {
         return 'never';
     }
     return moment.unix(ts).format('MMMM Do YYYY, h:mm a');
+};
+var renderVTable = function(collection) {
+    var headers = Object.keys(collection[0]);
+    var rows = [];
+    collection.forEach((item) => {
+        rows.push({ fields: Object.values(item) });
+    });
+    // begin rows = [{fields: [123,1,1244]}]
+    // end rows = [{fields: [{length: 3}]}]
+    // var rows = _.each(rows, row=>{
+    //     _.map(row.fields, field=>{
+    //         return {text: field, length: field.length};
+    //     });
+    // });
+    var totalHeaderWidth = _.chain(headers).reduce((result, value) => {
+        return result + value.length;
+    }, 0);
+    console.log('total header column width');
+    var totalWidth = _.chain(rows);
+    console.log('_______________')
+    forEach(headers, (val, index) => {});
 };
