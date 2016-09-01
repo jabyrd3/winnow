@@ -30,13 +30,11 @@ var renderVTable = function(collection) {
     }
     var headers = Object.keys(collection[0]);
     var rows = [headers];
-    console.log('rows', rows);
     collection.forEach((item) => {
         rows.push(_.map(item, (val, key) => {
             return val;
         }));
     });
-    console.log('rows', rows);
     var columnWidths = calcColumns(rows);
     var barWidth = _.sum(columnWidths) + (2 * columnWidths.length) + columnWidths.length + 1;
     var middlebit = '';
