@@ -21,29 +21,33 @@ var calcColumns = function(rows) {
 // ctrl
 var renderVTable = function(collection) {
     // debug
-    // if (!collection) {
-    //     var collection = [{ tag: 'self', passed: 'never', failed: 'never' },
-    //         { tag: 'jbyrd', passed: 'never', failed: 'adsfasdfasdfasdf' }
-    //     ];
-    // }
+    if (!collection) {
+        var collection = [{ tag: 'self', passed: 'never', failed: 'never' },
+            { tag: 'jbyrd', passed: 'never', failed: 'adsfasdfasdfasdf' },
+            { tag: 'jbyrd', passed: 'never', failed: 'adsfasdfasdfasdf' },
+            { tag: 'jbyr123123d', passed: 'never', failed: 'adsfasdfasdfasdf' },
+        ];
+    }
     var headers = Object.keys(collection[0]);
     var rows = [headers];
+    console.log('rows', rows);
     collection.forEach((item) => {
         rows.push(_.map(item, (val, key) => {
             return val;
         }));
     });
+    console.log('rows', rows);
     var columnWidths = calcColumns(rows);
     var barWidth = _.sum(columnWidths) + (2 * columnWidths.length) + columnWidths.length + 1;
     var middlebit = '';
     columnWidths.forEach((item, index) => {
         if (index !== columnWidths.length - 1) {
-            middlebit += `${'━'.repeat(item + 2)}┯`;
+            middlebit += `${'─'.repeat(item + 2)}┬`;
         } else {
-            middlebit += '━'.repeat(item + 2);
+            middlebit += '─'.repeat(item + 2);
         }
     });
-    var bar = '┏' + middlebit + '┓';
+    var bar = '┌' + middlebit + '┐';
     console.log(bar);
     // iterate rows, including the header
     rows.forEach((item, index) => {
@@ -52,7 +56,7 @@ var renderVTable = function(collection) {
         item.forEach((inner, innrdx) => {
             // first and last get thik lines
             if (innrdx === 0 || innrdx === columnWidths.length - 1) {
-                var sc = '┃';
+                var sc = '│';
             } else {
                 var sc = '│';
             }
@@ -78,13 +82,13 @@ var renderVTable = function(collection) {
         console.log(row);
         // header separator
         if (index === 0) {
-            var midBar = '┠';
+            var midBar = '├';
             columnWidths.forEach((item, index) => {
                 midBar += '─'.repeat(item + 2);
                 if (index !== columnWidths.length - 1) {
                     midBar += '┼';
                 } else {
-                    midBar += '┨';
+                    midBar += '┤';
                 }
             });
             // console.log(`┠${'─'.repeat(barWidth-2)}┨`);
@@ -92,15 +96,15 @@ var renderVTable = function(collection) {
         }
         // enclose after last row
         // console.log(index, columnWidths.length - 2);
-        if (index === columnWidths.length - 1) {
-            var bottomBar = '┗';
+        if (index === rows.length - 1) {
+            var bottomBar = '└';
             columnWidths.forEach((item, index) => {
 
-                bottomBar += '━'.repeat(item + 2);
+                bottomBar += '─'.repeat(item + 2);
                 if (index !== columnWidths.length - 1) {
-                    bottomBar += '┷';
+                    bottomBar += '┴';
                 } else {
-                    bottomBar += '┛';
+                    bottomBar += '┘';
                 }
             });
             console.log(bottomBar);
