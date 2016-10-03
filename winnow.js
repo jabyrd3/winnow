@@ -59,6 +59,7 @@ vorpal
             .then(function(repo) {
                 rimraf.sync('tmp/.git');
                 config.obfuscate.forEach(function(path) {
+                    path = `./tmp/${path}`;
                     var obfuscate = UglifyJS.minify(path);
                     fs.writeFileSync(path, obfuscate.code, 'utf8');
                 });
@@ -226,8 +227,7 @@ vorpal
                         console.log(err);
                         return callback();
                     }
-                    // console.log('body:', res.body);
-                    if (res.length === 0) {
+                    if (JSON.parse(res.body).length === 0) {
                         console.log('no change since your last check!');
                         return callback();
                     } else {
