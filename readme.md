@@ -65,7 +65,7 @@ clean:db - clears entire testee db. this is non-recoverable.
 
 # Todo
 - [ ] add more complicated testing capabilites.
-- [ ] delete single items by tagname
+- [x] delete single items by tagname
 - [ ] search by email
 - [ ] search by tagname
 - [ ] delete via regex/glob
@@ -88,3 +88,4 @@ clean:db - clears entire testee db. this is non-recoverable.
 - [ ] repo status per test, ie: # of commits since init, # of active pull requests.
 - [x] check out pr instead of actual HEAD on code check
 - [ ] modularize code (commands dir)
+- [ ] check current master branch (don't need a PR to run test)

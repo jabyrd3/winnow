@@ -1,4 +1,5 @@
-var vorpal = require('vorpal')();
+'use strict';
+const vorpal = require('vorpal')();
 var sqlite3 = require('sqlite3')
     .verbose();
 var db = new sqlite3.Database('./winnow.data');
@@ -26,24 +27,22 @@ fs.readFile('client_id.json', function(err, token) {
     if (err) {
         console.log('you need to run node gmail_auth.js first to generate tokens');
         return;
-    } else {
-        var credentials = JSON.parse(token);
-        var clientSecret = credentials.installed.client_secret;
-        var clientId = credentials.installed.client_id;
-        var redirectUrl = credentials.installed.redirect_uris[0];
-        var auth = new googleAuth();
-        oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    } 
+    const credentials = JSON.parse(token);
+    const clientSecret = credentials.installed.client_secret;
+    const clientId = credentials.installed.client_id;
+    const redirectUrl = credentials.installed.redirect_uris[0];
+    const auth = new googleAuth();
+    oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    oauth2Client.credentials = JSON.parse(token);
+    // Check if we have previously stored a token.
+    fs.readFile('.credentials/winnow_gmail_auth.json', function(err, token) {
+        if (err) {
+            console.log('you need to run node gmail_auth first to log into gmail');
+            return;
+        } 
         oauth2Client.credentials = JSON.parse(token);
-        // Check if we have previously stored a token.
-        fs.readFile('.credentials/winnow_gmail_auth.json', function(err, token) {
-            if (err) {
-                console.log('you need to run node gmail_auth first to log into gmail');
-                return;
-            } else {
-                oauth2Client.credentials = JSON.parse(token);
-            }
-        });
-    }
+    });
 });
 
 db.serialize(function() {
@@ -67,19 +66,19 @@ vorpal
                 var hash = crypto.createHash('md5').update(`${args.tag} ${args.email}`).digest('hex');
                 //post new repo to github
                 request.post({
-                        url: `https://${config.privToken}:x-oauth-basic@api.github.com/user/repos`,
-                        headers: {
-                            'User-Agent': 'winnow-code-test'
-                        },
-                        json: {
-                            'name': `${args.tag}-${hash}`,
-                            'description': 'This is a codetest from winnow',
-                            'private': false,
-                            'has_issues': true,
-                            'has_wiki': true,
-                            'has_downloads': true
-                        }
+                    url: `https://${config.privToken}:x-oauth-basic@api.github.com/user/repos`,
+                    headers: {
+                        'User-Agent': 'winnow-code-test'
                     },
+                    json: {
+                        'name': `${args.tag}-${hash}`,
+                        'description': 'This is a codetest from winnow',
+                        'private': false,
+                        'has_issues': true,
+                        'has_wiki': true,
+                        'has_downloads': true
+                    }
+                },
                     function(err, res) {
                         if (err) {
                             console.log('ooops', err);
@@ -95,7 +94,7 @@ vorpal
                         var username = config.username;
                         exec('cd tmp; git init; git add .; git commit -m \'init\'');
                         exec(`cd tmp; git remote add origin ${testurl}`);
-                        exec(`cd tmp; git push -u origin master`);
+                        exec('cd tmp; git push -u origin master');
                         rimraf.sync('tmp');
 
                         // ugly hack for now
@@ -169,6 +168,49 @@ vorpal
             return callback();
         });
     });
+vorpal.command('clean:tag <tag>', 'clear repo and all db records for tag').action(function(args, callback){
+    db.get('SELECT * FROM applicants WHERE tag = $tag', {
+        $tag: args.tag
+    }, function(err, row) {
+        if (err) { console.log('oops', err); }
+        request({
+            method: 'DELETE',
+            url: row.apiurl,
+            headers: {
+                'User-Agent': 'winnow-code-test',
+                'Authorization': `token ${config.privToken}`
+            }
+        },
+        function(err, res) {
+            if (err) {
+                console.log('ooops', err);
+                rimraf.sync('tmp');
+            }
+            // console.log('response: ', res.status, res.body);
+            db.run('DELETE FROM applicants WHERE tag = $tag', {$tag: args.tag}, function(err, row){
+                if(err){
+                    console.log(err);
+                }
+                return callback();
+            });
+        });
+    });    
+});
+
+vorpal.command('clean:tag:db <tag>', 'clear from db only').action(function(args, callback){
+    db.get('SELECT * FROM applicants WHERE tag = $tag', {
+        $tag: args.tag
+    }, function(err, row) {
+        if (err) { console.log('oops', err); }
+        db.run('DELETE FROM applicants WHERE tag = $tag', {$tag: args.tag}, function(err, row){
+            if(err){
+                console.log(err);
+            }
+            return callback();
+        });
+    });    
+});
+
 vorpal
     .command('clean:repos', 'clear all winnow repos from github')
     .action(function(args, callback) {
@@ -178,13 +220,13 @@ vorpal
                 return callback();
             }
             request({
-                    method: 'DELETE',
-                    url: row.apiurl,
-                    headers: {
-                        'User-Agent': 'winnow-code-test',
-                        'Authorization': `token ${config.privToken}`
-                    }
-                },
+                method: 'DELETE',
+                url: row.apiurl,
+                headers: {
+                    'User-Agent': 'winnow-code-test',
+                    'Authorization': `token ${config.privToken}`
+                }
+            },
                 function(err, res) {
                     if (err) {
                         console.log('ooops', err);
@@ -217,11 +259,11 @@ vorpal
             }
             rimraf.sync('tmp');
             request.get({
-                    url: `https://${config.privToken}:x-oauth-basic@api.github.com/repos/${config.gitUserName}/${args.tag}-${crypto.createHash('md5').update(args.tag + ' ' + row.email).digest('hex')}/pulls`,
-                    headers: {
-                        'User-Agent': 'winnow-code-test'
-                    },
+                url: `https://${config.privToken}:x-oauth-basic@api.github.com/repos/${config.gitUserName}/${args.tag}-${crypto.createHash('md5').update(args.tag + ' ' + row.email).digest('hex')}/pulls`,
+                headers: {
+                    'User-Agent': 'winnow-code-test'
                 },
+            },
                 function(err, res) {
                     if (err) {
                         console.log(err);
@@ -269,14 +311,14 @@ vorpal
                                         window.doneTrigger = function(success, state) {
                                             if (_.isEqual(success, state)) {
                                                 console.log('checks out');
-                                                db.run(`UPDATE applicants SET lastpass = strftime('%s','now') WHERE tag = $tag`, {
+                                                db.run('UPDATE applicants SET lastpass = strftime(\'%s\',\'now\') WHERE tag = $tag', {
                                                     $tag: args.tag
                                                 });
                                                 rimraf.sync('tmp');
                                                 return callback();
                                             } else {
                                                 console.log('they screwed somthing up');
-                                                db.run(`UPDATE applicants SET lastfail = strftime('%s','now') WHERE tag = $tag`, {
+                                                db.run('UPDATE applicants SET lastfail = strftime(\'%s\',\'now\') WHERE tag = $tag', {
                                                     $tag: args.tag
                                                 }, function(err) {
                                                     if (err) {
