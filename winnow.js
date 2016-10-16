@@ -11,7 +11,7 @@ var moment = require('moment');
 
 const commands = require('./commands');
 // todo: fix this hack
-let foo = {
+const context = {
     config: config,
     args: process.argv,
     db: db,
@@ -39,7 +39,7 @@ let foo = {
 Object.keys(commands).forEach(key=>{
     var command = commands[key];
     vorpal.command(command.command[0], command.command[1])
-    .action(command.action.bind(foo));
+    .action(command.action.bind(context));
 });
 // setup auth
 fs.readFile('client_id.json', function(err, token) {
@@ -52,15 +52,15 @@ fs.readFile('client_id.json', function(err, token) {
     const clientId = credentials.installed.client_id;
     const redirectUrl = credentials.installed.redirect_uris[0];
     const auth = new googleAuth();
-    foo.oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-    foo.oauth2Client.credentials = JSON.parse(token);
+    context.oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    context.oauth2Client.credentials = JSON.parse(token);
     // Check if we have previously stored a token.
     fs.readFile('.credentials/winnow_gmail_auth.json', function(err, token) {
         if (err) {
             console.log('you need to run node gmail_auth first to log into gmail');
             return;
         } 
-        foo.oauth2Client.credentials = JSON.parse(token);
+        context.oauth2Client.credentials = JSON.parse(token);
     });
 });
 
