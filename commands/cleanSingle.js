@@ -2,10 +2,10 @@ const request = require('request');
 const rimraf = require('rimraf');
 module.exports={
     command: ['clean:tag <tag>', 'clear repo and all db records for tag'],
-    action: function(args, callback){
+    action: function (args, callback) {
         this.db.get('SELECT * FROM applicants WHERE tag = $tag', {
             $tag: args.tag
-        }, function(err, row) {
+        }, (err, row) => {
             if (err) { console.log('oops', err); }
             request({
                 method: 'DELETE',
@@ -15,7 +15,7 @@ module.exports={
                     'Authorization': `token ${this.config.privToken}`
                 }
             },
-          function(err) {
+          (err) => {
               if (err) {
                   console.log('ooops', err);
                   rimraf.sync('tmp');
