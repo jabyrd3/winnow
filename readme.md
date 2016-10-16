@@ -55,7 +55,9 @@ using the credentials from config.js, sends an email to the &lt;email&gt; arg wi
 
 list - lists all the testees in the db. tag: email @ https://github.com/yoururl/generated-test
 
-check &lt;tag&gt; - downloads the target repository, obfuscates any files you want hidden from the end user, runs the users code, and fires a simple equality test (for now), against 2 objects to test if the testee solved the problem.
+check &lt;tag&gt; - downloads the test repo, runs the code, fires window.doneTrigger and checks for equality of end state an answer provided by the test.
+
+check:pr &lt;tag&gt; - merges teh candidates PR into master, downloads the target repository, runs the users code, and fires a simple equality test (for now), against 2 objects to test if the testee solved the problem.
 
 clean:tmp - removes the tmp directory in case something breaks. If you ever need to use this please file an issue
 
