@@ -1,6 +1,6 @@
-# Whiteboards are awful.
+# Coding aptitude tests done right
 
-Winnow is small commandline utility that allows you to quickly send sample codetests and check the validity of the answers using only an applicants email address. It also keeps track of who you've sent tests to in a local database to help manage large numbers of tests and candidates so that you pick the programmer who is actually best suited for your job. It's all too easy to project personal bias into the tech hiring process, so why not try to go out of your way to be more fair from the get go and get your hands on some code before making a judgement call?
+Winnow is small commandline utility that allows you to quickly send codetests and check the validity of the answers using only an applicants email address. It also keeps track of who you've sent tests to in a local database to help manage large numbers of tests and candidates so that you pick the programmer who is actually best suited for your job. It's all too easy to project personal bias into the tech hiring process, so why not try to go out of your way to be more fair from the get go and get your hands on some code before making a judgement call?
 
 ## Programmers should be in charge of hiring programmers
 
