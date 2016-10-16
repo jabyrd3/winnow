@@ -1,5 +1,6 @@
 'use strict';
 const vorpal = require('vorpal')();
+const _ = require('lodash');
 var sqlite3 = require('sqlite3')
     .verbose();
 var db = new sqlite3.Database('./winnow.data');
@@ -32,14 +33,31 @@ const context = {
                 return 'never';
             }
             return moment.unix(ts).format('MMMM Do YYYY, h:mm a');
+        },
+        getTags: () => {
+            var deferred = new Promise((resolve, reject) => {
+                db.all('SELECT * FROM applicants', (err, rows) => {
+                    if(err) return reject(err);
+                    resolve(_.reduce(rows, function(agg, cv){
+                        agg.push(cv.tag);
+                        return agg;
+                    }, []));
+                });
+            });
+            return deferred;
         }
+
     }
 };
 
 Object.keys(commands).forEach(key=>{
     var command = commands[key];
-    vorpal.command(command.command[0], command.command[1])
-    .action(command.action.bind(context));
+    vorpal
+    .command(command.command[0], command.command[1])
+    .action(command.action.bind(context))
+    .autocomplete({
+        data: context.utils.getTags
+    });
 });
 // setup auth
 fs.readFile('client_id.json', function(err, token) {
@@ -63,8 +81,7 @@ fs.readFile('client_id.json', function(err, token) {
         context.oauth2Client.credentials = JSON.parse(token);
     });
 });
-
-db.serialize(function() {
+db.serialize(() => {
     // quick and dirty db setup
     db.run('CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT, apiurl TEXT, lastfail INTEGER, lastpass INTEGER); ', [], function() {});
     db.run('SELECT complexity FROM applicants', (row, err) => {

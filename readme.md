@@ -1,14 +1,10 @@
 # Whiteboards are awful.
 
-Winnow is small commandline utility that allows you to blindly send sample codetests and check the validity of the answers using only an applicants email address. It also keeps track of who you've sent tests to in a simple sqlite database to help manage large numbers of tests and candidates so that you pick the programmer who is actually best suited for your job. It's all too easy to project personal bias into the tech hiring process, so why not try to go out of your way to be more fair from the get go and get your hands on some code before making a judgement call?
-
-The first indication of a potential employees technical abilities shouldn't happen in front of a whiteboard in your office. It's a barbaric practice that overvalues certain types of problem-solving and denigrates other styles, often to the detriment of people who aren't traditional CS-graduate type programmers.
-
-Also, it's insanely inefficient! Having your technical staff watching someone frantically write psuedocode in a conference room is a waste of everyone's time. I prefer to screen candidates with an untimed test, specifically written based on the needs of the organization, that an applicant can perform in an environment they're familiar with–on their own time–without artifical pressure or constraints. Nobody writes huge chunks of software on a whiteboard, so why should we expect it out of candidates?
+Winnow is small commandline utility that allows you to quickly send sample codetests and check the validity of the answers using only an applicants email address. It also keeps track of who you've sent tests to in a local database to help manage large numbers of tests and candidates so that you pick the programmer who is actually best suited for your job. It's all too easy to project personal bias into the tech hiring process, so why not try to go out of your way to be more fair from the get go and get your hands on some code before making a judgement call?
 
 ## Programmers should be in charge of hiring programmers
 
-HR can't determine how gifted or experienced someone is purely from a resume. If you automate the code testing process and make it painless for someone to track as part of their regular job, I genuinely believe it will be easier to hire a quality candidate who fits your organizations technical abilities.
+If you automate the code testing process and make it painless for someone to track as part of their regular job, I genuinely believe it will be easier to hire a quality candidate who fits your organizations technical abilities.
 
 # Installation
 
@@ -46,6 +42,13 @@ node winnow
 ```
 The winnow command opens an interactive shell-like environment via vorpal. From there, you can send code tests, view your sent tests, and check results from individual candidates.
 
+# Writing your own tests
+For your own tests to work, you need to add a couple pieces of boilerplate. You can see it in action [here](https://github.com/jabyrd3/rover). There are a couple things to keep in mind when writing a code test for rover:
+
+- If you look at engine.js in that link, you can see the first 5 lines act as a stub to create a window object, if one doesn't exist. This is weird, but it was the only decent way for me to get a handle on the environment via jsdom.
+- To get the automatic correctness checking working, you need to call `window.doneTrigger`, which is a function bolts onto the global namespace when it's running the test. Right now, the only thing this does is check that the 2 values passed are equal. If the 2 values passed to doneTrigger are equal, winnow views it as a pass, otherwise it marks down that they failed.
+- Because the candidate gets a copy of the `engine.js` file, it'd be trivial to see the `successWorld` variable and work backwards to get that answer, or even hack around the test entirely. In sample.config.js, you'll notice there's an array called 'obfuscate'. This minifies any files provided to make reverse engineering the test a little bit more difficult (still not impossible, but i'd argue if if a candidate reverse engineers your code test you should probably hire them on the spot).
+
 # Available commands
 
 (these are under heavy development; to see better documentation just type 'help' into the winnow shell)
@@ -59,35 +62,39 @@ check &lt;tag&gt; - downloads the test repo, runs the code, fires window.doneTri
 
 check:pr &lt;tag&gt; - merges teh candidates PR into master, downloads the target repository, runs the users code, and fires a simple equality test (for now), against 2 objects to test if the testee solved the problem.
 
+complexity &lt;tag&gt; - runs code complexity analysis (looking for cyclomatic complexity and maintainability) against the submission. This command kicks out the full output.
+
+details:complexity &lt;tag&gt; - details about saved complexity report, formatted to be a bit nicer than the raw JSON.
+
+clean &lt;tag&gt; - use this to remove a candidates repo (their fork persists) and record in the database
+
 clean:tmp - removes the tmp directory in case something breaks. If you ever need to use this please file an issue
 
-clean:repos - deletes all winnow repos from your github account.
+clean:repos - deletes all winnow repos from your github account, this is non-recoverable.
 
 clean:db - clears entire testee db. this is non-recoverable.
 
 # Todo
 - [ ] add more complicated testing capabilites.
-- [x] delete single items by tagname
-- [ ] search by email
-- [ ] search by tagname
+- [ ] fuzzy search list
+- [ ] filter / sort list
 - [ ] delete via regex/glob
-- [x] save test results
-- [ ] check all tests?
-- [ ] colors
-- [ ] tab complete
 - [ ] package for npm
-- [x] table view for list
-- [ ] table interactivity?
-- [ ] named code tests
 - [ ] multiple code tests
+- [ ] named code tests (ie: send jabyrd3@gmail.com <tagname> <testname>)
 - [ ] fancier config?
 - [ ] interactive setup
-- [ ] interactive goog auth
-- [ ] unique id, unique tagname, interactive 'choose between two tagnames' functionality
+- [ ] interactive goog auth process
+- [ ] repo status per test, ie: # of commits since init, # of active pull requests.
+- [ ] auto run complexity after submission success
+- [x] enforce unique tagname, tagname is required.
+- [x] delete single items by tagname
+- [x] save test results
+- [x] tab complete (tags, specifically)
+- [x] table view for list
 - [x] keep user from breaking stuff too badly
 - [x] manage repos to keep from cluttering up the users github profile too badly
 - [x] tag repos in github for ease of deletion
-- [ ] repo status per test, ie: # of commits since init, # of active pull requests.
 - [x] check out pr instead of actual HEAD on code check
 - [x] modularize code (commands dir)
 - [x] check current master branch (don't need a PR to run test)
