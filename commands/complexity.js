@@ -1,7 +1,8 @@
-let escomplex = require('typhonjs-escomplex');
-let Git = require('nodegit');
-let fs = require('fs');
-let rimraf = require('rimraf');
+const escomplex = require('typhonjs-escomplex');
+const Git = require('nodegit');
+const fs = require('fs');
+const rimraf = require('rimraf');
+const table = require('../rendervtable.js');
 module.exports={
     command: ['complexity <tag>', 'get maintainability report '],
     action: function(args, callback){
@@ -12,18 +13,23 @@ module.exports={
                 callbacks: {
                     certificateCheck: function() { return 1; }
                 }
-            }).then(repo => {
-                fs.readFile(`./tmp/${this.config.answerScript}`, 'utf8', function(err, file){
+            }).then(() => {
+                fs.readFile(`./tmp/${this.config.answerScript}`, 'utf8', (err, file) => {
                     if(err) console.log(err);
-                    console.log('fileread');
                     const analysis = escomplex.analyzeModule(file);
-                    console.log(analysis.maintainability);
-                    // rimraf.sync('./tmp');
-                    return callback();
+                    console.log(analysis);
+                    this.db.run('UPDATE applicants SET complexity = $report WHERE tag = $tag', {
+                        $tag: args.tag,
+                        $report: JSON.stringify(analysis)
+                    }, ()=>{
+                        rimraf.sync('./tmp');
+                        return callback();
+                    });
+                    // console.log(maintainability);
                 });
             }).catch(err=>{
-              console.log(err);
-              return callback();
+                console.log(err);
+                return callback();
             });
         });
     }

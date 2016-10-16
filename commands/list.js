@@ -10,7 +10,18 @@ module.exports = {
             var collection = [];
             rows.forEach((row) => {
                 if (row) {
-                    collection.push({ tag: row.tag, 'passed': this.utils.formatUnix(row.lastpass), 'failed': this.utils.formatUnix(row.lastfail) });
+                    var report = JSON.parse(row.complexity);
+                    collection.push({ 
+                        tag: row.tag, 
+                        'passed': this.utils.formatUnix(row.lastpass), 
+                        'failed': this.utils.formatUnix(row.lastfail),
+                        analysis: report !== null ? `MT: ${parseInt(report
+                                .maintainability)} | AC: ${report
+                                .methodAverage
+                                .cyclomatic} | CD: ${report
+                                        .methodAverage
+                                        .cyclomaticDensity}` : 'none'
+                    });
                 }
             });
             if (rows.length > 0) {

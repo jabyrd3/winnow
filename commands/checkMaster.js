@@ -9,8 +9,8 @@ module.exports = {
             if (err) {
                 console.log(err);
             }
-            rimraf.sync('../tmp');
-            Git.Clone(row.url, '../tmp').then(() => {
+            rimraf.sync('tmp');
+            Git.Clone(row.url, 'tmp').then(() => {
                 // here is where we run the tests
                 // debug
                 // var virtualConsole = jsdom.createVirtualConsole();
@@ -32,7 +32,7 @@ module.exports = {
                                 this.db.run('UPDATE applicants SET lastpass = strftime(\'%s\',\'now\') WHERE tag = $tag', {
                                     $tag: args.tag
                                 });
-                                rimraf.sync('../tmp');
+                                rimraf.sync('tmp');
                                 return callback();
                             } else {
                                 console.log('they screwed somthing up');
@@ -42,7 +42,7 @@ module.exports = {
                                     if (err) {
                                         console.log(err);
                                     }
-                                    rimraf.sync('../tmp');
+                                    rimraf.sync('tmp');
                                     return callback();
                                 });
                             }
@@ -54,7 +54,7 @@ module.exports = {
                 });
             }).catch(function(err) {
                 console.log('i regret to inform you that there has been a catastrophic oops', err);
-                rimraf.sync('../tmp');
+                rimraf.sync('tmp');
             });
         });
     }

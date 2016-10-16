@@ -67,6 +67,11 @@ fs.readFile('client_id.json', function(err, token) {
 db.serialize(function() {
     // quick and dirty db setup
     db.run('CREATE TABLE IF NOT EXISTS applicants (email TEXT, tag TEXT, url TEXT, apiurl TEXT, lastfail INTEGER, lastpass INTEGER); ', [], function() {});
+    db.run('SELECT complexity FROM applicants', (row, err) => {
+        if(row !== null && row.code === 'SQLITE_ERROR'){
+            db.run('ALTER TABLE applicants ADD COLUMN complexity TEXT');
+        }
+    });
 });
 
 vorpal
