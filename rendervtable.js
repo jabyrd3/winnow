@@ -1,6 +1,6 @@
-var _ = require('lodash');
+const _ = require('lodash');
 // utils
-var calcColumns = function(rows) {
+const calcColumns = function(rows) {
     var widths = [],
         widthMatrix = _.chain(rows).map((keys, val) => {
             return _.map(keys, (innerval, innerkey) => {
@@ -19,7 +19,7 @@ var calcColumns = function(rows) {
     return widths;
 };
 // ctrl
-var renderVTable = function(collection) {
+const renderVTable = function(collection) {
     // debug
     if (!collection) {
         var collection = [{ tag: 'self', passed: 'never', failed: 'never' },
@@ -69,10 +69,6 @@ var renderVTable = function(collection) {
                 row += ' ';
             }
             row += ' '.repeat(padding) + inner + ' '.repeat(padding);
-            // console.log('jab', inner.length, columnWidths[index]);
-            // if (inner.length % 2) {
-            //     row += ' ';
-            // }
             if (innrdx === columnWidths.length - 1) {
                 row += sc;
             }
@@ -89,11 +85,9 @@ var renderVTable = function(collection) {
                     midBar += '┤';
                 }
             });
-            // console.log(`┠${'─'.repeat(barWidth-2)}┨`);
             console.log(midBar);
         }
         // enclose after last row
-        // console.log(index, columnWidths.length - 2);
         if (index === rows.length - 1) {
             var bottomBar = '└';
             columnWidths.forEach((item, index) => {
