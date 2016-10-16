@@ -32,7 +32,7 @@ const context = {
             if (!ts) {
                 return 'never';
             }
-            return moment.unix(ts).format('MMMM Do YYYY, h:mm a');
+            return moment.unix(ts).format('MM/D/YY');
         },
         getTags: () => {
             var deferred = new Promise((resolve, reject) => {

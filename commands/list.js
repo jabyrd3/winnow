@@ -18,9 +18,7 @@ module.exports = {
                         analysis: report !== null ? `MT: ${parseInt(report
                                 .maintainability)} | AC: ${report
                                 .methodAverage
-                                .cyclomatic} | CD: ${report
-                                        .methodAverage
-                                        .cyclomaticDensity}` : 'none'
+                                .cyclomatic}` : 'none'
                     });
                 }
             });
