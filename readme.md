@@ -82,10 +82,11 @@ clean:db - clears entire testee db. this is non-recoverable.
 - [ ] interactive setup
 - [ ] interactive goog auth
 - [ ] unique id, unique tagname, interactive 'choose between two tagnames' functionality
-- [ ] keep user from breaking stuff too badly
+- [x] keep user from breaking stuff too badly
 - [x] manage repos to keep from cluttering up the users github profile too badly
-- [ ] tag repos in github for ease of deletion
+- [x] tag repos in github for ease of deletion
 - [ ] repo status per test, ie: # of commits since init, # of active pull requests.
 - [x] check out pr instead of actual HEAD on code check
-- [ ] modularize code (commands dir)
-- [ ] check current master branch (don't need a PR to run test)
+- [x] modularize code (commands dir)
+- [x] check current master branch (don't need a PR to run test)
+- [x] analyze complexity of submission
