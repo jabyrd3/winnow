@@ -1,4 +1,3 @@
-console.log('lolbutts', this);
 const table = require('../rendervtable.js');
 module.exports = {
     command: ['list', 'lists emails and tags'],
