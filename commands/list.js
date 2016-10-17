@@ -1,4 +1,4 @@
-const table = require('../rendervtable.js');
+const table = require('utftables');
 module.exports = {
     command: ['list', 'lists emails and tags'],
     action: function(args, callback) {

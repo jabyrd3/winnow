@@ -2,7 +2,6 @@ const escomplex = require('typhonjs-escomplex');
 const Git = require('nodegit');
 const fs = require('fs');
 const rimraf = require('rimraf');
-const table = require('../rendervtable.js');
 module.exports={
     command: ['complexity <tag>', 'get maintainability report '],
     action: function(args, callback){
