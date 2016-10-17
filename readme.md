@@ -27,9 +27,6 @@ node gmail_auth.js # follow the instructions after this command
 node winnow
 ```
 
-# Status
-This is a super pre-alpha. Use at your own risk. I'll try to get a sample code test up in the next couple days to show how to use this with your own tests.
-
 # Tech
 Vorpal is the main driver of the current interface. Internally it uses a single-table sqlite database to keep track of your issued tests. Git integration is a mix of https calls and Nodegit, tests are run with jsdom. Obfuscation is a simple uglify-js call.
 
