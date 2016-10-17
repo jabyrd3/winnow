@@ -1,6 +1,6 @@
 {
   "name": "winnow-test",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "CLI tool for wrangling hiring code tests and assessing candidates",
   "main": "winnow.js",
   "dependencies": {
