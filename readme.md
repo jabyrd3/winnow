@@ -72,6 +72,7 @@ clean:repos - deletes all winnow repos from your github account, this is non-rec
 clean:db - clears entire testee db. this is non-recoverable.
 
 # Todo
+- [ ] fix callback hell in individual commands.
 - [ ] add more complicated testing capabilites.
 - [ ] fuzzy search list
 - [ ] filter / sort list
