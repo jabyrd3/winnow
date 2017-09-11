@@ -27,7 +27,7 @@ module.exports = {
                             console.log(error);
                         }
                         window.doneTrigger = (success, state) => {
-                            if (_.isEqual(success, state)) {
+                            if (_.isEqual(success.join().toLowerCase(), state.join().toLowerCase())) {
                                 console.log('checks out');
                                 this.db.run('UPDATE applicants SET lastpass = strftime(\'%s\',\'now\') WHERE tag = $tag', {
                                     $tag: args.tag
